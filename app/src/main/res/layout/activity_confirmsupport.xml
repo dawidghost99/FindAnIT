@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/iamit_background"
+    android:orientation="vertical"
+    android:configChanges="orientation"
+    android:screenOrientation="portrait"
+    tools:context=".confirmsupport">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="248dp"
+        android:layout_height="83dp"
+        android:fontFamily="casual"
+        android:text="Confirmation"
+        android:textSize="36sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="212dp"
+        android:layout_height="22dp"
+        android:fontFamily="casual"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/pnumber"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintVertical_bias="0.445" />
+
+    <TextView
+        android:id="@+id/pnumber"
+        android:layout_width="211dp"
+        android:layout_height="25dp"
+        android:fontFamily="casual"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/email"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintVertical_bias="0.666" />
+
+    <TextView
+        android:id="@+id/email"
+        android:layout_width="215dp"
+        android:layout_height="27dp"
+        android:layout_marginTop="248dp"
+        android:fontFamily="casual"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@id/signupbtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintVertical_bias="0.096" />
+
+    <Button
+        android:id="@+id/signupbtn"
+        android:layout_width="128dp"
+        android:layout_height="82dp"
+        android:text="Sign up!"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2"
+        app:layout_constraintVertical_bias="0.752" />
+
+    <TextView
+        android:id="@+id/role"
+        android:layout_width="213dp"
+        android:layout_height="26dp"
+        android:layout_marginTop="36dp"
+        android:fontFamily="casual"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@id/signupbtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/email"
+        app:layout_constraintVertical_bias="0.391" />
+
+    <Button
+        android:id="@+id/backbtn"
+        android:layout_width="72dp"
+        android:layout_height="40dp"
+        android:onClick="onBackPressed"
+        android:text=" Back"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.952"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signupbtn"
+        app:layout_constraintVertical_bias="0.615" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="134dp"
+        android:layout_height="85dp"
+        android:progressTint="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/backbtn"
+        app:layout_constraintHorizontal_bias="0.73"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signupbtn"
+        app:layout_constraintVertical_bias="0.728" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

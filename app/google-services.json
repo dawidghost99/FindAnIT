@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "707996675677",
+    "firebase_url": "https://findanit-finalproject.firebaseio.com",
+    "project_id": "findanit-finalproject",
+    "storage_bucket": "findanit-finalproject.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:707996675677:android:d383f957a27698aa1827b4",
+        "android_client_info": {
+          "package_name": "abertay.ac.uk.findanit"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "707996675677-331ciualscp2hh4o10ltuhhcslkjjsti.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "abertay.ac.uk.findanit",
+            "certificate_hash": "98f0bc00e7269e647121023bb231f24749a87ca6"
+          }
+        },
+        {
+          "client_id": "707996675677-lpcu1tce96ibtq0g1mauushvebvq1tf9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8b6KKL4LtDAlaGK543616C0BPnvm2IUg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "707996675677-lpcu1tce96ibtq0g1mauushvebvq1tf9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
