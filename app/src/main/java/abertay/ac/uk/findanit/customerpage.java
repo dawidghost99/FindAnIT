@@ -15,10 +15,14 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryDataEventListener;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -30,10 +34,10 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseError;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,72 +45,142 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.sql.Time;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
-public class supportpage extends FragmentActivity implements OnMapReadyCallback {
+public class customerpage extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private String address;
-    private String customerID = "";
 
-    double latText,lonText,joblatText,joblonText;
+    Button requestBtn;
+
+
+
+
+
+
+    double latText,lonText;
+
+    private LatLng jobLocation;
+
     int PERMISSION_ID = 44;
     FusedLocationProviderClient mFusedLocationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_supportpage);
+        setContentView(R.layout.activity_customerpage);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+
+        requestBtn = findViewById(R.id.calljobbtn);
+
         getLastLocation();
 
-        getAssignedCustomer();
 
-
-    }
-
-
-    private void getAssignedCustomer(){
-        String supportID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assignedCustomerRed = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportID);
-        assignedCustomerRed.addValueEventListener(new ValueEventListener() {
+        requestBtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
+            public void onClick(View v) {
+                String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                    Map<String, Object> map = (Map<String, Object>) dataSnapshot.getValue();
-                    if(map.get("customerJobID") !=null){
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Requests");
+                GeoFire gfire = new GeoFire(ref);
+                gfire.setLocation(userID, new GeoLocation(latText, lonText),new
+                        GeoFire.CompletionListener(){
+                            @Override
+                            public void onComplete(String key, DatabaseError error) {
+                                jobLocation = new LatLng(latText,lonText);
+                                mMap.addMarker(new MarkerOptions().position(jobLocation).title("Your location"));
+                                mMap.moveCamera(CameraUpdateFactory.newLatLng(jobLocation));
+                                requestBtn.setText("Finding I.T. ");
+                            }
+                        });
 
-                        customerID = map.get("customerJobID").toString();
-                        getAssignedCustomerLocation();
 
-                    }
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                getClosestSupport();
 
             }
         });
 
     }
 
+    private int radius =1;
+    private boolean supportFound = false ;
+    private String supportFoundID;
 
-    private void getAssignedCustomerLocation(){
 
-        DatabaseReference assignedCustomerLocationRef = FirebaseDatabase.getInstance().getReference().child("SupportLocation").child(customerID).child("l");
+    private void getClosestSupport(){
+        DatabaseReference supportLocation = FirebaseDatabase.getInstance().getReference("SupportLocation");
+        GeoFire gfire = new GeoFire(supportLocation);
+        GeoQuery gQuery = gfire.queryAtLocation(new GeoLocation(latText,lonText),radius);
+        gQuery.removeAllListeners();
 
-        assignedCustomerLocationRef.addValueEventListener(new ValueEventListener() {
+
+        gQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+            @Override
+            public void onKeyEntered(String key, GeoLocation location) {
+                if(!supportFound){
+
+                    supportFound = true;
+                    supportFoundID = key;
+
+                    DatabaseReference SupportRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportFoundID);
+                    String customerID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    HashMap map = new HashMap();
+                    map.put("customerJobID", customerID);
+                    SupportRef.updateChildren(map);
+
+                    getSupportLocation();
+                    requestBtn.setText("Looking for Supporter location");
+
+                }
+            }
+
+            @Override
+            public void onKeyExited(String key) {
+
+            }
+
+            @Override
+            public void onKeyMoved(String key, GeoLocation location) {
+
+            }
+
+            @Override
+            public void onGeoQueryReady() {
+                if(!supportFound){
+
+                    radius++;
+                    getClosestSupport();
+                }
+
+
+            }
+
+            @Override
+            public void onGeoQueryError(DatabaseError error) {
+
+            }
+        });
+
+
+    }
+
+
+    Marker supportMarker;
+
+    private void getSupportLocation(){
+
+
+        DatabaseReference supportref = FirebaseDatabase.getInstance().getReference().child("SupportLocation").child(supportFoundID).child("l");
+        supportref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
@@ -114,6 +188,7 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
                     List<Object> map = (List<Object>) dataSnapshot.getValue();
                     double locationLat = 0;
                     double locationLon = 0;
+                    requestBtn.setText("Support found");
                     if(map.get(0) != null){
 
                         locationLat = Double.parseDouble(map.get(0).toString());
@@ -126,11 +201,15 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
 
                     LatLng supportlng = new LatLng(locationLat,locationLon);
 
-                    mMap.addMarker(new MarkerOptions().position(supportlng).title("Job Location"));
+                    if(supportMarker != null){
+                        supportMarker.remove();
 
                     }
+                    supportMarker = mMap.addMarker(new MarkerOptions().position(supportlng).title("Your I.T. Support Location"));
 
                 }
+            }
+
 
 
             @Override
@@ -138,19 +217,10 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
 
             }
         });
-
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-
-        LatLng jobmark = new LatLng(latText, lonText);
-        mMap.setMyLocationEnabled(true);
-        mMap.addMarker(new MarkerOptions().position(jobmark).title("Your location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(jobmark));
-
         mMap = googleMap;
         mMap.setMyLocationEnabled(true);
         LatLng location = new LatLng(latText, lonText);
@@ -170,18 +240,6 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
 
 
 
-
-
-        String userid = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
-        DatabaseReference myref = FirebaseDatabase.getInstance().getReference("SupportLocation");
-        GeoFire gfire = new GeoFire(myref);
-        gfire.setLocation(userid, new GeoLocation(latText, lonText),new
-                GeoFire.CompletionListener(){
-                    @Override
-                    public void onComplete(String key, DatabaseError error) {
-
-                    }
-                });
 
     }
 
@@ -249,7 +307,7 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
             Location mLastLocation = locationResult.getLastLocation();
             latText = mLastLocation.getLatitude();
             lonText = mLastLocation.getLongitude();
-
+            mMap.clear();
             onMapReady(mMap);
 
         }
@@ -299,19 +357,17 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
     }
 
 
+
     public void logout(View V){
 
-
-        FirebaseAuth.getInstance().signOut();
-        Intent intent = new Intent(supportpage.this, MainActivity.class );
-        startActivity(intent);
-        finish();
-
-
-
+         FirebaseAuth.getInstance().signOut();
+         Intent intent = new Intent(customerpage.this, MainActivity.class);
+         startActivity(intent);
+         finish();
 
 
     }
+
 
 
 

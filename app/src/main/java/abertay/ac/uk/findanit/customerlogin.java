@@ -58,14 +58,14 @@ public class customerlogin extends AppCompatActivity {
 
 
                 // authenticate the user
-
+                progressBar.setVisibility(View.VISIBLE);
                 fAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        progressBar.setVisibility(View.VISIBLE);
+
                         if (task.isSuccessful()) {
                             Toast.makeText(customerlogin.this, "Logged in Successfully", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(getApplicationContext(), ineedpage.class));
+                            startActivity(new Intent(getApplicationContext(), customerpage.class));
                         } else {
                             Toast.makeText(customerlogin.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             progressBar.setVisibility(View.GONE);

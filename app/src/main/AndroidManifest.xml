@@ -34,12 +34,12 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".supportpage"
-            android:label="@string/title_activity_supportpage"></activity>
-        <activity
-            android:name=".ineedpage"
+            android:name=".customerpage"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".supportpage"
+            android:label="@string/title_activity_supportpage" />
         <activity
             android:name=".confirmcustomer"
             android:screenOrientation="portrait"

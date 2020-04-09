@@ -66,11 +66,11 @@ public class supportlogin extends AppCompatActivity {
 
 
                 // authenticate the user
-
+                progressBar.setVisibility(View.VISIBLE);
                 fAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        progressBar.setVisibility(View.VISIBLE);
+
                         if (task.isSuccessful()) {
 
                             Toast.makeText(supportlogin.this, "Logged in Successfully", Toast.LENGTH_SHORT).show();

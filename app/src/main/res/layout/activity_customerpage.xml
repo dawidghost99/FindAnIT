@@ -16,15 +16,22 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".supportpage" />
+        tools:context=".customerpage" />
 
     <Button
-        android:id="@+id/logbtn"
+        android:id="@+id/logoutbtn"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center|top"
         android:onClick="logout"
         android:text="Logout" />
+
+    <Button
+        android:id="@+id/calljobbtn"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:text="Request I.T. Specialist" />
 
 
 
