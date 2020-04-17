@@ -59,7 +59,7 @@ public class confirmcustomer extends Activity {
         pnumber.setText(number);
         email.setText(emailtxt);
         role.setText("I need I.T. Support");
-
+        final String fullname = firstname + " " + lastname;
 
         signupbtn = findViewById(R.id.signupbtn);
         fAuth = FirebaseAuth.getInstance();
@@ -82,8 +82,10 @@ public class confirmcustomer extends Activity {
 
                         if(task.isSuccessful()){
                             String user_id = fAuth.getCurrentUser().getUid();
-                            DatabaseReference myref = database.getReference().child("Users").child("Customer").child(user_id);
-                            myref.setValue(true);
+                            DatabaseReference myrefname = database.getReference().child("Users").child("Customer").child(user_id).child("name").child(fullname);
+                            DatabaseReference myrefpnum = database.getReference().child("Users").child("Customer").child(user_id).child("pnumber").child(number);
+                            myrefname.setValue(true);
+                            myrefpnum.setValue(true);
 
 
                             userID = fAuth.getCurrentUser().getUid();

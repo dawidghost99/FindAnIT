@@ -15,6 +15,11 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
+import android.webkit.ConsoleMessage;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -30,6 +35,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -41,6 +47,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.w3c.dom.Text;
+
 import java.sql.Time;
 import java.util.List;
 import java.util.Map;
@@ -49,12 +57,19 @@ import java.util.Objects;
 public class supportpage extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private String address;
     private String customerID = "";
-
-    double latText,lonText,joblatText,joblonText;
+    private Boolean isLoggedout = false;
+    Button  logoutbtn;
+    double latText,lonText;
+    Marker jobMarker;
     int PERMISSION_ID = 44;
     FusedLocationProviderClient mFusedLocationClient;
+
+
+    private LinearLayout CustomerInfo;
+    TextView custname, custphonenumber;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,29 +83,106 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
+
+        CustomerInfo = findViewById(R.id.customerInfo);
+        custname =  findViewById(R.id.customername);
+        custphonenumber =  findViewById(R.id.customerpnumber);
+
+
+        logoutbtn = findViewById(R.id.logbtn);
+        logoutbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                isLoggedout = true;
+                disconnect();
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(supportpage.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+
+            }
+        });
+
+
+
+
+
         getAssignedCustomer();
 
 
-    }
 
+
+
+
+
+    }
+    DatabaseReference assignedCustomerRef;
 
     private void getAssignedCustomer(){
         String supportID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference assignedCustomerRed = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportID);
-        assignedCustomerRed.addValueEventListener(new ValueEventListener() {
+         assignedCustomerRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportID).child("customerJobID");
+         assignedCustomerRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
+                    customerID = dataSnapshot.getValue().toString();
+                    getAssignedCustomerLocation();
+                    getAssignedCustomerInfo();
+                }
+                else{
+                    customerID = "";
+                    if(jobMarker != null){
 
-                    Map<String, Object> map = (Map<String, Object>) dataSnapshot.getValue();
-                    if(map.get("customerJobID") !=null){
+                        jobMarker.remove();
+                        CustomerInfo.setVisibility(View.GONE);
 
-                        customerID = map.get("customerJobID").toString();
-                        getAssignedCustomerLocation();
 
                     }
+                    if(assignedCustomerLocationRefListener != null){
+
+
+                    assignedCustomerLocationRef.removeEventListener(assignedCustomerLocationRefListener);
+                }
 
                 }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    public void getAssignedCustomerInfo(){
+        DatabaseReference customerInfo = FirebaseDatabase.getInstance().getReference().child("Users").child("Customer").child(customerID);
+        customerInfo.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.getChildrenCount() > 0) {
+                    CustomerInfo.setVisibility(View.VISIBLE);
+                    Map<String, Object> map = (Map<String, Object>) dataSnapshot.getValue();
+
+                    if (map.get("name") != null) {
+
+                        String name = map.get("name").toString();
+                        name = name.replace("{","");
+                        String[] splitstr;
+                        splitstr = name.split("=");
+
+
+                        custname.setText(splitstr[0]);
+                    }
+
+                    if (map.get("pnumber") != null) {
+
+                        String pnum =map.get("pnumber").toString();
+                        pnum = pnum.replace("{","");
+                        String splitsrt[] = pnum.split("=");
+                        custphonenumber.setText(splitsrt[0]);
+                    }
+                }
+
             }
 
             @Override
@@ -98,18 +190,22 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
 
             }
         });
-
     }
 
 
+
+
+    private DatabaseReference assignedCustomerLocationRef;
+    private ValueEventListener assignedCustomerLocationRefListener;
+
     private void getAssignedCustomerLocation(){
 
-        DatabaseReference assignedCustomerLocationRef = FirebaseDatabase.getInstance().getReference().child("SupportLocation").child(customerID).child("l");
+        assignedCustomerLocationRef = FirebaseDatabase.getInstance().getReference().child("Requests").child(customerID).child("l");
 
-        assignedCustomerLocationRef.addValueEventListener(new ValueEventListener() {
+        assignedCustomerLocationRefListener = assignedCustomerLocationRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
+                if(dataSnapshot.exists() && !customerID.equals("")){
 
                     List<Object> map = (List<Object>) dataSnapshot.getValue();
                     double locationLat = 0;
@@ -126,7 +222,18 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
 
                     LatLng supportlng = new LatLng(locationLat,locationLon);
 
-                    mMap.addMarker(new MarkerOptions().position(supportlng).title("Job Location"));
+                    jobMarker = mMap.addMarker(new MarkerOptions().position(supportlng).title("Job Location"));
+
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latText, lonText),13));
+
+                    CameraPosition cameraPosition = new CameraPosition.Builder()
+                            .target(supportlng)      // Sets the center of the map to location user
+                            .zoom(17)                   // Sets the zoom
+                            .bearing(90)                // Sets the orientation of the camera to east
+                            .tilt(0)                   // Sets the tilt of the camera to 30 degrees
+                            .build();                   // Creates a CameraPosition from the builder
+                    mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
 
                     }
 
@@ -148,7 +255,7 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
 
         LatLng jobmark = new LatLng(latText, lonText);
         mMap.setMyLocationEnabled(true);
-        mMap.addMarker(new MarkerOptions().position(jobmark).title("Your location"));
+
         mMap.moveCamera(CameraUpdateFactory.newLatLng(jobmark));
 
         mMap = googleMap;
@@ -162,7 +269,7 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
                     .target(new LatLng(latText, lonText))      // Sets the center of the map to location user
                     .zoom(17)                   // Sets the zoom
                     .bearing(90)                // Sets the orientation of the camera to east
-                    .tilt(40)                   // Sets the tilt of the camera to 30 degrees
+                    .tilt(0)                   // Sets the tilt of the camera to 30 degrees
                     .build();                   // Creates a CameraPosition from the builder
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
@@ -299,14 +406,23 @@ public class supportpage extends FragmentActivity implements OnMapReadyCallback 
     }
 
 
-    public void logout(View V){
+    public void disconnect(){
 
+        String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference myref = FirebaseDatabase.getInstance().getReference("SupportLocation").child(userID);
 
-        FirebaseAuth.getInstance().signOut();
-        Intent intent = new Intent(supportpage.this, MainActivity.class );
-        startActivity(intent);
-        finish();
+        myref.removeValue();
 
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+
+        if(!isLoggedout) {
+            disconnect();
+
+        }
 
 
 

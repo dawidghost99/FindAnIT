@@ -17,7 +17,7 @@ import java.util.Arrays;
 
 public class signup extends AppCompatActivity {
 
-    EditText Fname,Sname,emailtxt,phonenum,psw,Cpsw;
+    EditText firstName,surName,emailtxt,phonenum,psw,confirmpsw;
     boolean passcomp;
     Button Register;
     FirebaseAuth fAuth;
@@ -42,10 +42,10 @@ public class signup extends AppCompatActivity {
 
 
 
-        Fname = (EditText) findViewById(R.id.name);
+        firstName = (EditText) findViewById(R.id.name);
 
 
-        Sname = (EditText) findViewById(R.id.Sname);
+        surName = (EditText) findViewById(R.id.Sname);
 
 
         phonenum = (EditText) findViewById(R.id.phonenum);
@@ -57,9 +57,9 @@ public class signup extends AppCompatActivity {
         psw = (EditText) findViewById(R.id.psw);
 
 
-        Cpsw = (EditText) findViewById(R.id.Cpsw);
+        confirmpsw = (EditText) findViewById(R.id.Cpsw);
 
-        if(Fname.length() < 1 || Sname.length() <1 || phonenum.length() <1 || emailtxt.length()<1 || psw.length() < 1  || Cpsw.length() <1 ){
+        if(firstName.length() < 1 || surName.length() <1 || phonenum.length() <1 || emailtxt.length()<1 || psw.length() < 1  || confirmpsw.length() <1 ){
 
 
             Context context = getApplicationContext();
@@ -72,12 +72,12 @@ public class signup extends AppCompatActivity {
         }
         else {
 
-            String firstname = Fname.getText().toString();
+            String firstname = firstName.getText().toString();
             intent.putExtra("firstname", firstname);
 
 
 
-            String lastname = Sname.getText().toString();
+            String lastname = surName.getText().toString();
             intent.putExtra("lastname", lastname);
 
 
@@ -98,7 +98,7 @@ public class signup extends AppCompatActivity {
             intent.putExtra("psw", password);
 
 
-            String conpassword = Cpsw.getText().toString();
+            String conpassword = confirmpsw.getText().toString();
 
             passcomp = password.equals(conpassword);
 
@@ -114,10 +114,24 @@ public class signup extends AppCompatActivity {
             toast.show();
 
             psw.setText("");
-            Cpsw.setText("");
+            confirmpsw.setText("");
 
 
 
+
+        }
+
+
+        if(psw.length()<6){
+            Context context = getApplicationContext();
+            CharSequence text = "Passwords is less than 6 characters long!  ";
+            int duration = Toast.LENGTH_LONG;
+
+            Toast toast = Toast.makeText(context, text, duration);
+            toast.show();
+
+            psw.setText("");
+            confirmpsw.setText("");
 
         }
 

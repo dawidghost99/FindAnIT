@@ -54,9 +54,7 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private String address;
 
-    Button requestBtn;
-
-
+    Button requestBtn, logoutbtn;
 
 
 
@@ -64,6 +62,8 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
     double latText,lonText;
 
     private LatLng jobLocation;
+
+    private Boolean requestBool = false;
 
     int PERMISSION_ID = 44;
     FusedLocationProviderClient mFusedLocationClient;
@@ -81,6 +81,9 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
 
 
         requestBtn = findViewById(R.id.calljobbtn);
+        logoutbtn = findViewById(R.id.logoutbtn);
+
+
 
         getLastLocation();
 
@@ -88,45 +91,88 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
         requestBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Requests");
-                GeoFire gfire = new GeoFire(ref);
-                gfire.setLocation(userID, new GeoLocation(latText, lonText),new
-                        GeoFire.CompletionListener(){
-                            @Override
-                            public void onComplete(String key, DatabaseError error) {
-                                jobLocation = new LatLng(latText,lonText);
-                                mMap.addMarker(new MarkerOptions().position(jobLocation).title("Your location"));
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(jobLocation));
-                                requestBtn.setText("Finding I.T. ");
-                            }
-                        });
+                if(requestBool){
+                    requestBool = false;
+                    gQuery.removeAllListeners();
+
+                    if(supportFoundID != null){
+                        DatabaseReference SupportRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportFoundID).child("customerJobID");
+                        SupportRef.removeValue();
+                        supportFoundID = null;
 
 
-                getClosestSupport();
+                    }
+                    supportFound = false;
+                    radius = 1;
+
+                    String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                    DatabaseReference requestref = FirebaseDatabase.getInstance().getReference().child("Requests").child(userID);
+                    requestref.removeValue();
+
+
+
+                    if(jobLocation != null){
+                        mMap.clear();
+
+                    }
+
+                    requestBtn.setText("Request I.T. Specialist");
+
+
+
+                }else{
+                    requestBool = true;
+                    String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Requests");
+                    GeoFire gfire = new GeoFire(ref);
+                    gfire.setLocation(userID, new GeoLocation(latText, lonText),new
+                            GeoFire.CompletionListener(){
+                                @Override
+                                public void onComplete(String key, DatabaseError error) {
+                                    jobLocation = new LatLng(latText,lonText);
+                                    mMap.addMarker(new MarkerOptions().position(jobLocation).title("Your location"));
+                                    mMap.moveCamera(CameraUpdateFactory.newLatLng(jobLocation));
+
+                                }
+                            });
+
+                    requestBtn.setText("Looking for  I.T. ... ");
+                    //requestBtn.setEnabled(false);
+                    getClosestSupport();
+
+                }
+
 
             }
         });
 
+
+
+
+
     }
 
-    private int radius =1;
+    private int radius = 1;
     private boolean supportFound = false ;
     private String supportFoundID;
-
+    GeoQuery gQuery;
 
     private void getClosestSupport(){
         DatabaseReference supportLocation = FirebaseDatabase.getInstance().getReference("SupportLocation");
         GeoFire gfire = new GeoFire(supportLocation);
-        GeoQuery gQuery = gfire.queryAtLocation(new GeoLocation(latText,lonText),radius);
+
+
+        gQuery = gfire.queryAtLocation(new GeoLocation(latText,lonText),radius);
         gQuery.removeAllListeners();
 
 
         gQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-                if(!supportFound){
+                if(!supportFound && requestBool){
 
                     supportFound = true;
                     supportFoundID = key;
@@ -136,9 +182,10 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
                     HashMap map = new HashMap();
                     map.put("customerJobID", customerID);
                     SupportRef.updateChildren(map);
+                    requestBtn.setText("I.T. found - Click here to cancel your I.T. service");
 
-                    getSupportLocation();
-                    requestBtn.setText("Looking for Supporter location");
+                    //getSupportLocation();
+
 
                 }
             }
@@ -155,13 +202,12 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
 
             @Override
             public void onGeoQueryReady() {
-                if(!supportFound){
-
+                if(!supportFound) {
+                    //radius upto 20 KM
                     radius++;
                     getClosestSupport();
+
                 }
-
-
             }
 
             @Override
@@ -173,13 +219,17 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    /*
 
-    Marker supportMarker;
+    private Marker supportMarker;
+    private DatabaseReference supportref;
+    private ValueEventListener support;
+
 
     private void getSupportLocation(){
 
 
-        DatabaseReference supportref = FirebaseDatabase.getInstance().getReference().child("SupportLocation").child(supportFoundID).child("l");
+        supportref = FirebaseDatabase.getInstance().getReference().child("SupportLocation").child(supportFoundID).child("l");
         supportref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -205,9 +255,20 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
                         supportMarker.remove();
 
                     }
+
+                    Location location1 =  new Location("");
+                    location1.setLatitude(jobLocation.latitude);
+                    location1.setLongitude(jobLocation.longitude);
+
+
+                    Location location2 =  new Location("");
                     supportMarker = mMap.addMarker(new MarkerOptions().position(supportlng).title("Your I.T. Support Location"));
+                    location2.setLatitude(jobLocation.latitude);
+                    location2.setLongitude(jobLocation.longitude);
+
 
                 }
+
             }
 
 
@@ -218,6 +279,9 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
+    */
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -232,12 +296,10 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
                     .target(new LatLng(latText, lonText))      // Sets the center of the map to location user
                     .zoom(17)                   // Sets the zoom
                     .bearing(90)                // Sets the orientation of the camera to east
-                    .tilt(40)                   // Sets the tilt of the camera to 30 degrees
+                    .tilt(0)                   // Sets the tilt of the camera to 30 degrees
                     .build();                   // Creates a CameraPosition from the builder
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
-
-
 
 
 
@@ -356,6 +418,17 @@ public class customerpage extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+
+        //disconnect
+
+
+
+    }
 
 
     public void logout(View V){

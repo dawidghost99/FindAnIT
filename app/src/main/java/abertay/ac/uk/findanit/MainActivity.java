@@ -15,7 +15,7 @@ import android.view.WindowManager;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
-
+//convert all to on click listeners
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -37,6 +37,8 @@ public class confirmsupport extends Activity {
     FirebaseDatabase database;
     Button signupbtn;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,9 +51,9 @@ public class confirmsupport extends Activity {
         number = bundle.getString("Pnumber");
         emailtxt = bundle.getString("email");
         psw = bundle.getString("psw");
+        final String fullname = firstname + " " + lastname;
 
-
-        TextView name = (TextView) findViewById(R.id.name);
+        final TextView name = (TextView) findViewById(R.id.name);
         final TextView pnumber = (TextView) findViewById(R.id.pnumber);
         TextView email = (TextView) findViewById(R.id.email);
         TextView role = (TextView) findViewById(R.id.role);
@@ -82,8 +84,10 @@ public class confirmsupport extends Activity {
 
                         if(task.isSuccessful()){
                             String user_id = fAuth.getCurrentUser().getUid();
-                            DatabaseReference myref = database.getReference().child("Users").child("Support").child(user_id);
-                            myref.setValue(true);
+                            DatabaseReference myrefname = database.getReference().child("Users").child("Support").child(user_id).child("name").child(fullname);
+                            DatabaseReference myrefpnum = database.getReference().child("Users").child("Support").child(user_id).child("pnumber").child(number);
+                            myrefname.setValue(true);
+                            myrefpnum.setValue(true);
 
 
                             userID = fAuth.getCurrentUser().getUid();
