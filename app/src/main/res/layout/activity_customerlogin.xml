@@ -4,16 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/needit_background"
+    android:background="@drawable/customerbackground"
     android:orientation="vertical"
-    tools:context=".customerlogin">
+    tools:context=".customerLoginActivity">
 
     <Button
         android:id="@+id/backbtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:onClick="onBackPressed"
         android:text="Back"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -35,7 +34,7 @@
         app:layout_constraintVertical_bias="0.082" />
 
     <Button
-        android:id="@+id/lgnbtn"
+        android:id="@+id/loginbtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
@@ -74,7 +73,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="casual"
-        android:text="Username"
+        android:text="Email"
         android:textSize="30sp"
         app:layout_constraintBottom_toTopOf="@+id/usmtxtbox"
         app:layout_constraintEnd_toEndOf="parent"

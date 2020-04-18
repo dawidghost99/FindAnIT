@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     android:orientation="vertical"
-    android:background="@drawable/main_background"
+    android:background="@drawable/mainbackground"
 
     >
 
@@ -30,12 +30,11 @@
         app:layout_constraintVertical_bias="0.056" />
 
     <Button
-        android:id="@+id/needitbtn"
+        android:id="@+id/customerbtn"
         android:layout_width="145dp"
         android:layout_height="79dp"
         android:layout_marginBottom="264dp"
         android:fontFamily="casual"
-        android:onClick="open_needitlogin"
         android:text="I need an I.T."
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,24 +44,23 @@
         app:layout_constraintVertical_bias="0.254" />
 
     <Button
-        android:id="@+id/amitbtn"
+        android:id="@+id/supportbtn"
         android:layout_width="150dp"
         android:layout_height="80dp"
         android:fontFamily="casual"
-        android:onClick="open_iamitlogin"
         android:text="I am an I.T."
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/needitbtn"
+        app:layout_constraintTop_toBottomOf="@+id/customerbtn"
         app:layout_constraintVertical_bias="0.329" />
 
     <ImageView
         android:id="@+id/logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/needitbtn"
+        app:layout_constraintBottom_toTopOf="@+id/customerbtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
         app:layout_constraintStart_toStartOf="parent"
@@ -71,16 +69,17 @@
         app:srcCompat="@drawable/logo" />
 
     <Button
-        android:id="@+id/signup"
+        android:id="@+id/signupbtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
         android:fontFamily="casual"
-        android:onClick="open_signup"
         android:text="Sign up"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amitbtn" />
+        app:layout_constraintTop_toBottomOf="@+id/supportbtn" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

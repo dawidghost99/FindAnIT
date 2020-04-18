@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application
         android:allowBackup="true"
@@ -32,35 +33,37 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".customerpage"
+            android:name=".customerPageActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".supportpage"
-            android:label="@string/title_activity_supportpage" />
-        <activity
-            android:name=".confirmcustomer"
+            android:name=".supportPageActivity"
+            android:label="@string/title_activity_supportpage"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".confirmsupport"
+            android:name=".confirmCustomerActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".signupend"
-            android:parentActivityName=".signup"
+            android:name=".confirmSupportActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".supportlogin"
+            android:name=".signupRoleActivity"
+            android:parentActivityName=".signupActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".signup"
+            android:name=".supportLoginActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".customerlogin"
+            android:name=".signupActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".customerLoginActivity"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity

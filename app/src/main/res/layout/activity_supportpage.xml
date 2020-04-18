@@ -19,7 +19,7 @@
         tools:context=".supportpage" />
 
     <Button
-        android:id="@+id/logbtn"
+        android:id="@+id/logOutbtn"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center|top"
@@ -32,7 +32,7 @@
         android:layout_gravity="left|bottom"
         android:id="@+id/customerInfo"
         android:orientation="horizontal"
-        android:background="@drawable/iamit_background"
+        android:background="@drawable/mainbackground"
         android:visibility="gone">
 
         <LinearLayout

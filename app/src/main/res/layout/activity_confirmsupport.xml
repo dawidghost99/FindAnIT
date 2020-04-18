@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/iamit_background"
+    android:background="@drawable/supportbackground"
     android:orientation="vertical"
     android:configChanges="orientation"
     android:screenOrientation="portrait"
-    tools:context=".confirmsupport">
+    tools:context=".confirmSupportActivity">
 
     <TextView
         android:id="@+id/textView2"
@@ -88,7 +88,6 @@
         android:id="@+id/backbtn"
         android:layout_width="72dp"
         android:layout_height="40dp"
-        android:onClick="onBackPressed"
         android:text=" Back"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
