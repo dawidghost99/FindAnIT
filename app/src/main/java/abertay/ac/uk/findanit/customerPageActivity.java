@@ -1,3 +1,4 @@
+
 package abertay.ac.uk.findanit;
 
 import androidx.annotation.NonNull;
@@ -346,7 +347,7 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
     @Override
     protected void onStop(){
         super.onStop();
-    //disconnect
+        //disconnect
     }
 
 

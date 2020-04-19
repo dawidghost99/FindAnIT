@@ -2,21 +2,31 @@ package abertay.ac.uk.findanit;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Icon;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,9 +55,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static android.view.textclassifier.SelectionEvent.ACTION_RESET;
 
 public class supportPageActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -55,14 +68,19 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
 
     private String customerID = "";
     String customerphonenumber;
-    private boolean isLoggedout = false;
-
-
+    boolean isLoggedout = false;
+    private static final int NOTIFICATION_ID_TEXT = 1;
+    public static final String CHANNEL_ID_IMPORTANT = "Job has been Canceled by customer";
+    public static final String CHANNEL_ID_NORMAL = "New Job!";
     int PERMISSION_ID = 44;
 
-    double latText,lonText;
+    double latText, lonText;
 
     Marker jobMarker;
+
+    NotificationManager notificationManager;
+    Notification.Builder jobcanceled;
+    Notification.Builder newjob;
 
     FusedLocationProviderClient mFusedLocationClient;
 
@@ -74,7 +92,7 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
     private LinearLayout CustomerInfo;
 
     TextView custname, custphonenumber;
-    Button  logoutbtn;
+    Button logoutbtn;
 
 
     @Override
@@ -86,12 +104,30 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        initNotificationChannels();
+
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        initNotificationChannels();
+
+        jobcanceled = new Notification.Builder(getApplicationContext(), CHANNEL_ID_IMPORTANT)
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentTitle("Job Canceled");
+
+
+        newjob = new Notification.Builder(getApplicationContext(), CHANNEL_ID_NORMAL)
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentTitle("New Job")
+                .setAutoCancel(true);
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
         CustomerInfo = findViewById(R.id.customerInfo);
-        custname =  findViewById(R.id.customername);
-        custphonenumber =  findViewById(R.id.customerpnumber);
+        custname = findViewById(R.id.customername);
+        custphonenumber = findViewById(R.id.customerpnumber);
 
         logoutbtn = findViewById(R.id.logOutbtn);
         logoutbtn.setOnClickListener(new View.OnClickListener() {
@@ -111,30 +147,31 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
 
     }
 
-    private void getAssignedCustomer(){
+    private void getAssignedCustomer() {
         String supportID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-         assignedCustomerRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportID).child("customerJobID");
-         assignedCustomerRef.addValueEventListener(new ValueEventListener() {
+        assignedCustomerRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportID).child("customerJobID");
+        assignedCustomerRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
+                if (dataSnapshot.exists()) {
                     customerID = dataSnapshot.getValue().toString();
                     getAssignedCustomerLocation();
+                    notificationManager.notify(NOTIFICATION_ID_TEXT, newjob.build());
                     getAssignedCustomerInfo();
-                }
-                else{
+                } else {
                     customerID = "";
-                    if(jobMarker != null){
 
+                    if (jobMarker != null) {
+                        notificationManager.notify(NOTIFICATION_ID_TEXT, jobcanceled.build());
                         jobMarker.remove();
                         CustomerInfo.setVisibility(View.GONE);
 
                     }
-                    if(assignedCustomerLocationRefListener != null){
+                    if (assignedCustomerLocationRefListener != null) {
 
 
-                    assignedCustomerLocationRef.removeEventListener(assignedCustomerLocationRefListener);
-                }
+                        assignedCustomerLocationRef.removeEventListener(assignedCustomerLocationRefListener);
+                    }
                 }
 
             }
@@ -145,7 +182,7 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
         });
     }
 
-    public void getAssignedCustomerInfo(){
+    public void getAssignedCustomerInfo() {
         DatabaseReference customerInfo = FirebaseDatabase.getInstance().getReference().child("Users").child("Customer").child(customerID);
         customerInfo.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -157,20 +194,20 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
                     if (map.get("name") != null) {
 
                         String name = map.get("name").toString();
-                        name = name.replace("{","");
+                        name = name.replace("{", "");
                         String[] splitstr;
                         splitstr = name.split("=");
-
 
                         custname.setText(splitstr[0]);
                     }
 
                     if (map.get("pnumber") != null) {
 
-                        String pnum =map.get("pnumber").toString();
-                        pnum = pnum.replace("{","");
+                        String pnum = map.get("pnumber").toString();
+                        pnum = pnum.replace("{", "");
                         String splitsrt[] = pnum.split("=");
-                        custphonenumber.setText(splitsrt[0]);
+                        customerphonenumber = splitsrt[0];
+                        custphonenumber.setText(customerphonenumber);
                     }
                 }
 
@@ -184,32 +221,32 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
     }
 
 
-    private void getAssignedCustomerLocation(){
+    private void getAssignedCustomerLocation() {
 
         assignedCustomerLocationRef = FirebaseDatabase.getInstance().getReference().child("Requests").child(customerID).child("l");
 
         assignedCustomerLocationRefListener = assignedCustomerLocationRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists() && !customerID.equals("")){
+                if (dataSnapshot.exists() && !customerID.equals("")) {
 
                     List<Object> map = (List<Object>) dataSnapshot.getValue();
                     double locationLat = 0;
                     double locationLon = 0;
-                    if(map.get(0) != null){
+                    if (map.get(0) != null) {
 
                         locationLat = Double.parseDouble(map.get(0).toString());
 
                     }
-                    if(map.get(1) != null){
+                    if (map.get(1) != null) {
                         locationLon = Double.parseDouble((map.get(1)).toString());
 
                     }
-                    LatLng supportlng = new LatLng(locationLat,locationLon);
+                    LatLng supportlng = new LatLng(locationLat, locationLon);
 
                     jobMarker = mMap.addMarker(new MarkerOptions().position(supportlng).title("Job Location"));
 
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latText, lonText),13));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latText, lonText), 13));
 
                     CameraPosition cameraPosition = new CameraPosition.Builder()
                             .target(supportlng)      // Sets the center of the map to location user
@@ -218,8 +255,8 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
                             .tilt(0)                   // Sets the tilt of the camera to 30 degrees
                             .build();                   // Creates a CameraPosition from the builder
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                    }
                 }
+            }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -237,9 +274,8 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
         mMap = googleMap;
         mMap.setMyLocationEnabled(true);
         LatLng location = new LatLng(latText, lonText);
-        if (location != null)
-        {
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latText, lonText),13));
+        if (location != null) {
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(latText, lonText), 13));
 
             CameraPosition cameraPosition = new CameraPosition.Builder()
                     .target(new LatLng(latText, lonText))      // Sets the center of the map to location user
@@ -253,8 +289,8 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
         String userid = Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid();
         DatabaseReference myref = FirebaseDatabase.getInstance().getReference("SupportLocation");
         GeoFire gfire = new GeoFire(myref);
-        gfire.setLocation(userid, new GeoLocation(latText, lonText),new
-                GeoFire.CompletionListener(){
+        gfire.setLocation(userid, new GeoLocation(latText, lonText), new
+                GeoFire.CompletionListener() {
                     @Override
                     public void onComplete(String key, DatabaseError error) {
 
@@ -264,7 +300,7 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
     }
 
     @SuppressLint("MissingPermission")
-    private void getLastLocation(){
+    private void getLastLocation() {
 
         if (checkPermissions()) {
             if (isLocationEnabled()) {
@@ -276,10 +312,9 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
                                 if (location == null) {
                                     requestNewLocationData();
                                 } else {
-                                    latText= location.getLatitude() ;
-                                    lonText=location.getLongitude();
+                                    latText = location.getLatitude();
+                                    lonText = location.getLongitude();
                                     mMap.clear();
-
                                     onMapReady(mMap);
 
                                 }
@@ -297,7 +332,7 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
     }
 
     @SuppressLint("MissingPermission")
-    private void requestNewLocationData(){
+    private void requestNewLocationData() {
 
         LocationRequest mLocationRequest = new LocationRequest();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -306,8 +341,6 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
         mLocationRequest.setNumUpdates(1);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-
         mFusedLocationClient.requestLocationUpdates(
                 mLocationRequest, mLocationCallback,
                 Looper.myLooper()
@@ -362,15 +395,27 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
 
     public void calluser(View view) {
         Intent intent = new Intent(Intent.ACTION_DIAL);
-        customerphonenumber= custphonenumber.toString();
-        intent.setData(Uri.parse(customerphonenumber));
+        intent.setData(Uri.parse("tel:" + customerphonenumber));
         startActivity(intent);
 
 
     }
 
+    public void endjob(View view){
+
+        String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference myref = FirebaseDatabase.getInstance().getReference("Users").child("Support").child(userID).child("customerJobID");
+        DatabaseReference customerref = FirebaseDatabase.getInstance().getReference("Requests").child(customerID);
+        myref.removeValue();
+        customerref.removeValue();
+
+
+
+
+    }
+
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         if (checkPermissions()) {
             getLastLocation();
@@ -379,7 +424,7 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
     }
 
 
-    public void disconnect(){
+    public void disconnect() {
 
         String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference myref = FirebaseDatabase.getInstance().getReference("SupportLocation").child(userID);
@@ -387,15 +432,36 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
 
     }
 
+
     @Override
-    protected void onStop(){
+    protected void onStop() {
         super.onStop();
 
-        if(!isLoggedout) {
+        if (!isLoggedout) {
             disconnect();
 
         }
 
+    }
+
+    private void initNotificationChannels() {
+        /* If using older version which does not support channels, ignore this */
+        if (Build.VERSION.SDK_INT < 26) {
+            return;
+        }
+        ArrayList<NotificationChannel> channelList = new ArrayList<>();
+        channelList.add(new NotificationChannel(CHANNEL_ID_IMPORTANT, "IMPORTANT", NotificationManager.IMPORTANCE_HIGH));
+        channelList.add(new NotificationChannel(CHANNEL_ID_NORMAL, "DEFAULT", NotificationManager.IMPORTANCE_DEFAULT));
+
+        /* Register all channels from the list. */
+        if (notificationManager != null)
+            notificationManager.createNotificationChannels(channelList);
+    }
+
+    @Override
+    protected void onDestroy() {
+        /* !Always unregister receivers before exiting the application! */
+        super.onDestroy();
     }
 
 

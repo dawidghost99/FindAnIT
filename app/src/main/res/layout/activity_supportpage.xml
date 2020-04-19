@@ -42,16 +42,15 @@
             android:orientation="vertical"
             android:paddingLeft="40sp"
             >
+
             <TextView
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
-
                 android:textStyle="bold"
-
                 android:id="@+id/customername"
                 android:paddingBottom="10sp"
                 android:paddingTop="20sp"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 />
 
             <TextView
@@ -61,7 +60,47 @@
                 android:textStyle="bold"
                 android:paddingBottom="10sp"
                 android:paddingTop="20sp"
-                android:textSize="16sp"
+                android:textSize="20sp"
+
+                />
+
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:id="@+id/completejob"
+                android:text="Job complete"
+                android:onClick="calluser"
+                android:autoLink="phone"
+                android:drawableLeft="@android:drawable/ic_menu_send"
+                android:paddingBottom="10sp"
+                android:paddingTop="20sp"
+
+                />
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:id="@+id/canceljob"
+                android:text="cancel job"
+                android:onClick="endjob"
+                android:drawableLeft="@android:drawable/ic_menu_close_clear_cancel"
+                android:autoLink="phone"
+                android:paddingBottom="10sp"
+                android:paddingTop="20sp"
+
+                />
+
+
+
+            <Button
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:id="@+id/callcustomerbtn"
+                android:text="Call Customer"
+                android:onClick="calluser"
+                android:autoLink="phone"
+                android:drawableLeft="@android:drawable/ic_menu_call"
+                android:paddingBottom="10sp"
+                android:paddingTop="20sp"
 
                 />
 
