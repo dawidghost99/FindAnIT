@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -86,7 +87,6 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
 
     private DatabaseReference assignedCustomerLocationRef;
     private DatabaseReference assignedCustomerRef;
-
     private ValueEventListener assignedCustomerLocationRefListener;
 
     private LinearLayout CustomerInfo;
@@ -108,13 +108,9 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
 
         initNotificationChannels();
 
-        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        initNotificationChannels();
-
         jobcanceled = new Notification.Builder(getApplicationContext(), CHANNEL_ID_IMPORTANT)
                 .setSmallIcon(android.R.drawable.ic_dialog_alert)
-                .setContentTitle("Job Canceled");
+                .setContentTitle("Job Cancelled");
 
 
         newjob = new Notification.Builder(getApplicationContext(), CHANNEL_ID_NORMAL)
@@ -145,11 +141,22 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
 
         getAssignedCustomer();
 
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+            getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+        } else {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
+
+
     }
 
     private void getAssignedCustomer() {
+
         String supportID = FirebaseAuth.getInstance().getCurrentUser().getUid();
         assignedCustomerRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportID).child("customerJobID");
+        //new job and job canceled listeners
         assignedCustomerRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -165,6 +172,8 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
                         notificationManager.notify(NOTIFICATION_ID_TEXT, jobcanceled.build());
                         jobMarker.remove();
                         CustomerInfo.setVisibility(View.GONE);
+                        custname.setText("");
+                        custphonenumber.setText("");
 
                     }
                     if (assignedCustomerLocationRefListener != null) {
@@ -401,16 +410,23 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
 
     }
 
-    public void endjob(View view){
+    public void cancelejob(View view){
 
         String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DatabaseReference myref = FirebaseDatabase.getInstance().getReference("Users").child("Support").child(userID).child("customerJobID");
         DatabaseReference customerref = FirebaseDatabase.getInstance().getReference("Requests").child(customerID);
         myref.removeValue();
         customerref.removeValue();
+    }
 
+    public void finishJob(View view){
 
-
+        String userID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference myref = FirebaseDatabase.getInstance().getReference("Users").child("Support").child(userID).child("customerJobID");
+        DatabaseReference customerref = FirebaseDatabase.getInstance().getReference("Requests").child(customerID);
+        myref.removeValue();
+        customerref.removeValue();
+        jobcanceled.setContentTitle("Job finished");
 
     }
 
@@ -419,6 +435,7 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
         super.onResume();
         if (checkPermissions()) {
             getLastLocation();
+           // getAssignedCustomerLocation(); <-- this may get the marker back after calling user
         }
 
     }

@@ -32,7 +32,7 @@
         android:layout_gravity="left|bottom"
         android:id="@+id/customerInfo"
         android:orientation="horizontal"
-        android:background="@drawable/mainbackground"
+        android:background="@color/Darkblue"
         android:visibility="gone">
 
         <LinearLayout
@@ -68,20 +68,22 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:id="@+id/completejob"
-                android:text="Job complete"
-                android:onClick="calluser"
+                android:text="Job Completed"
+                android:onClick="finishJob"
+                android:drawableLeft="@android:drawable/ic_media_next"
                 android:autoLink="phone"
-                android:drawableLeft="@android:drawable/ic_menu_send"
                 android:paddingBottom="10sp"
                 android:paddingTop="20sp"
 
                 />
+
+
             <Button
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"
                 android:id="@+id/canceljob"
                 android:text="cancel job"
-                android:onClick="endjob"
+                android:onClick="cancelejob"
                 android:drawableLeft="@android:drawable/ic_menu_close_clear_cancel"
                 android:autoLink="phone"
                 android:paddingBottom="10sp"

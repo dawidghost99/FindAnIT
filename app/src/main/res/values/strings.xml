@@ -4,4 +4,5 @@
     <string name="title_activity_support_map">Map</string>
     <string name="title_activity_supportpage">Map</string>
     <string name="title_activity_customer_page">Map</string>
+    <color name="Darkblue">#3366cc</color>
 </resources>

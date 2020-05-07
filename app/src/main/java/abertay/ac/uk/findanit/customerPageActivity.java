@@ -7,16 +7,24 @@ import androidx.fragment.app.FragmentActivity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
@@ -46,22 +54,36 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+
+import static abertay.ac.uk.findanit.supportPageActivity.CHANNEL_ID_IMPORTANT;
+
 
 public class customerPageActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private String address;
-
+    String supportphonenumber;
     Button requestBtn, logoutbtn;
+    private static final int NOTIFICATION_ID_TEXT = 1;
+    public static final String CHANNEL_ID_IMPORTANT = "Job has been Canceled by Supporter";
 
     double latText,lonText;
 
     private LatLng jobLocation;
 
     private Boolean requestBool = false;
+
+    private LinearLayout supportInfo;
+
+    TextView supportname, supportpnumber;
+
+    NotificationManager notificationManager;
+    Notification.Builder jobcanceled;
 
     int PERMISSION_ID = 44;
     FusedLocationProviderClient mFusedLocationClient;
@@ -78,10 +100,25 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
 
+        supportInfo = findViewById(R.id.supportInfo);
+        supportname = findViewById(R.id.supportname);
+        supportpnumber = findViewById(R.id.supportpnumber);
+
+
         requestBtn = findViewById(R.id.calljobbtn);
         logoutbtn = findViewById(R.id.logoutbtn);
 
         getLastLocation();
+
+
+        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        initNotificationChannels();
+
+        jobcanceled = new Notification.Builder(getApplicationContext(), CHANNEL_ID_IMPORTANT)
+                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setContentTitle("Support Cancelled Job");
+
 
         requestBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,6 +151,9 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
                     }
 
                     requestBtn.setText("Request I.T. Specialist");
+                    supportInfo.setVisibility(View.GONE);
+                    supportname.setText("");
+                    supportpnumber.setText("");
 
 
 
@@ -143,7 +183,12 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
 
             }
         });
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+            getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+        } else {
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        }
 
 
 
@@ -167,7 +212,7 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
         gQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
             @Override
             public void onKeyEntered(String key, GeoLocation location) {
-                if(!supportFound && requestBool){
+                if(!supportFound && requestBool) {
 
                     supportFound = true;
                     supportFoundID = key;
@@ -177,13 +222,43 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
                     HashMap map = new HashMap();
                     map.put("customerJobID", customerID);
                     SupportRef.updateChildren(map);
+                    getAssignedSupportInfo();
                     requestBtn.setText("I.T. found - Click here to cancel your I.T. service");
+                    DatabaseReference SupportRefjob = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportFoundID).child("customerJobID");
+                   //listener if support staff cancels job
+                    SupportRefjob.addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (!dataSnapshot.exists()) {
+                                supportFoundID = "";
+                                mMap.clear();
+                                supportInfo.setVisibility(View.GONE);
+                                notificationManager.notify(NOTIFICATION_ID_TEXT, jobcanceled.build());
+                                supportname.setText("");
+                                supportpnumber.setText("");
+                                requestBtn.setText("Request I.T. Specialist");
+                            } else {
+
+
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+
+
+                }
 
                     //getSupportLocation();
 
 
-                }
             }
+
+
 
             @Override
             public void onKeyExited(String key) {
@@ -212,7 +287,56 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
         });
 
 
+
+
+
     }
+
+    public void callsupport(View view){
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:" + supportphonenumber));
+        startActivity(intent);
+    }
+
+
+    public void getAssignedSupportInfo() {
+        DatabaseReference customerInfo = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportFoundID);
+        customerInfo.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists() && dataSnapshot.getChildrenCount() > 0) {
+                    supportInfo.setVisibility(View.VISIBLE);
+                    Map<String, Object> map = (Map<String, Object>) dataSnapshot.getValue();
+
+                    if (map.get("name") != null) {
+
+                        String name = map.get("name").toString();
+                        name = name.replace("{", "");
+                        String[] splitstr;
+                        splitstr = name.split("=");
+
+                        supportname.setText(splitstr[0]);
+                    }
+
+                    if (map.get("pnumber") != null) {
+
+                        String pnum = map.get("pnumber").toString();
+                        pnum = pnum.replace("{", "");
+                        String splitsrt[] = pnum.split("=");
+                        supportphonenumber = splitsrt[0];
+                        supportpnumber.setText(supportphonenumber);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
 
 
     @Override
@@ -349,7 +473,19 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
         super.onStop();
         //disconnect
     }
+    private void initNotificationChannels() {
+        /* If using older version which does not support channels, ignore this */
+        if (Build.VERSION.SDK_INT < 26) {
+            return;
+        }
+        ArrayList<NotificationChannel> channelList = new ArrayList<>();
+        channelList.add(new NotificationChannel(CHANNEL_ID_IMPORTANT, "IMPORTANT", NotificationManager.IMPORTANCE_HIGH));
 
+
+        /* Register all channels from the list. */
+        if (notificationManager != null)
+            notificationManager.createNotificationChannels(channelList);
+    }
 
     public void logout(View V){
 
