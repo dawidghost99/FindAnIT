@@ -12,8 +12,8 @@
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="398dp"
-        android:layout_height="171dp"
+        android:layout_width="360dp"
+        android:layout_height="146dp"
         android:fontFamily="casual"
         android:textSize="30sp"
         app:layout_constraintBottom_toBottomOf="parent"

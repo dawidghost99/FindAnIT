@@ -64,9 +64,6 @@ public class supportLoginActivity extends AppCompatActivity {
                 }
 
 
-
-
-
                 // authenticate the user
                 progressBar.setVisibility(View.VISIBLE);
                 fAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -77,10 +74,11 @@ public class supportLoginActivity extends AppCompatActivity {
 
                             Toast.makeText(supportLoginActivity.this, "Logged in Successfully", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(getApplicationContext(), supportPageActivity.class));
+                            progressBar.setVisibility(View.GONE);
                         } else {
                             Toast.makeText(supportLoginActivity.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                             progressBar.setVisibility(View.GONE);
-                            return;
+
                         }
 
                     }
@@ -88,12 +86,8 @@ public class supportLoginActivity extends AppCompatActivity {
 
             }
         });
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-            getWindow().getDecorView().setSystemUiVisibility(uiOptions);
-        } else {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
     }
 

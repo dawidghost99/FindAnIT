@@ -60,9 +60,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static android.view.textclassifier.SelectionEvent.ACTION_RESET;
-
 public class supportPageActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -86,7 +83,6 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
     FusedLocationProviderClient mFusedLocationClient;
 
     private DatabaseReference assignedCustomerLocationRef;
-    private DatabaseReference assignedCustomerRef;
     private ValueEventListener assignedCustomerLocationRefListener;
 
     private LinearLayout CustomerInfo;
@@ -142,12 +138,8 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
         getAssignedCustomer();
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-            getWindow().getDecorView().setSystemUiVisibility(uiOptions);
-        } else {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        getWindow().getDecorView().setSystemUiVisibility(uiOptions);
 
 
     }
@@ -155,7 +147,7 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
     private void getAssignedCustomer() {
 
         String supportID = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        assignedCustomerRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportID).child("customerJobID");
+        DatabaseReference assignedCustomerRef = FirebaseDatabase.getInstance().getReference().child("Users").child("Support").child(supportID).child("customerJobID");
         //new job and job canceled listeners
         assignedCustomerRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -240,8 +232,8 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
                 if (dataSnapshot.exists() && !customerID.equals("")) {
 
                     List<Object> map = (List<Object>) dataSnapshot.getValue();
-                    double locationLat = 0;
-                    double locationLon = 0;
+                    double locationLat = 0; //location latitude
+                    double locationLon = 0; //location longitude
                     if (map.get(0) != null) {
 
                         locationLat = Double.parseDouble(map.get(0).toString());
@@ -261,7 +253,7 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
                             .target(supportlng)      // Sets the center of the map to location user
                             .zoom(17)                   // Sets the zoom
                             .bearing(90)                // Sets the orientation of the camera to east
-                            .tilt(0)                   // Sets the tilt of the camera to 30 degrees
+                            .tilt(0)                   // Sets the tilt of the camera
                             .build();                   // Creates a CameraPosition from the builder
                     mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                 }
@@ -369,11 +361,8 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
     };
 
     private boolean checkPermissions() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        return false;
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestPermissions() {
@@ -406,8 +395,6 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
         Intent intent = new Intent(Intent.ACTION_DIAL);
         intent.setData(Uri.parse("tel:" + customerphonenumber));
         startActivity(intent);
-
-
     }
 
     public void cancelejob(View view){
@@ -462,22 +449,16 @@ public class supportPageActivity extends FragmentActivity implements OnMapReadyC
     }
 
     private void initNotificationChannels() {
-        /* If using older version which does not support channels, ignore this */
-        if (Build.VERSION.SDK_INT < 26) {
-            return;
-        }
         ArrayList<NotificationChannel> channelList = new ArrayList<>();
         channelList.add(new NotificationChannel(CHANNEL_ID_IMPORTANT, "IMPORTANT", NotificationManager.IMPORTANCE_HIGH));
         channelList.add(new NotificationChannel(CHANNEL_ID_NORMAL, "DEFAULT", NotificationManager.IMPORTANCE_DEFAULT));
 
-        /* Register all channels from the list. */
         if (notificationManager != null)
             notificationManager.createNotificationChannels(channelList);
     }
 
     @Override
     protected void onDestroy() {
-        /* !Always unregister receivers before exiting the application! */
         super.onDestroy();
     }
 

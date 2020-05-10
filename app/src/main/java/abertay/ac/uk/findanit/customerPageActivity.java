@@ -20,8 +20,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.ConsoleMessage;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -237,9 +239,6 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
                                 supportname.setText("");
                                 supportpnumber.setText("");
                                 requestBtn.setText("Request I.T. Specialist");
-                            } else {
-
-
                             }
                         }
 
@@ -272,10 +271,19 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
 
             @Override
             public void onGeoQueryReady() {
-                if(!supportFound) {
+                if(!supportFound && radius < 20) {
                     //radius upto 20 KM
                     radius++;
                     getClosestSupport();
+                    String r = Integer.toString(radius);
+                    Log.i("Radius", r);
+
+                }
+                if(!supportFound && radius == 20){
+                        requestBtn.setText("No it specialist found");
+                        mMap.clear();
+                        onMapReady(mMap);
+                        radius = 1;
 
                 }
             }
@@ -352,7 +360,7 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
                     .target(new LatLng(latText, lonText))      // Sets the center of the map to location user
                     .zoom(17)                   // Sets the zoom
                     .bearing(90)                // Sets the orientation of the camera to east
-                    .tilt(0)                   // Sets the tilt of the camera to 30 degrees
+                    .tilt(0)                   // Sets the tilt of the camera
                     .build();                   // Creates a CameraPosition from the builder
             mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         }
@@ -424,11 +432,8 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
     };
 
     private boolean checkPermissions() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        return false;
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestPermissions() {
@@ -474,15 +479,12 @@ public class customerPageActivity extends FragmentActivity implements OnMapReady
         //disconnect
     }
     private void initNotificationChannels() {
-        /* If using older version which does not support channels, ignore this */
-        if (Build.VERSION.SDK_INT < 26) {
-            return;
-        }
+
         ArrayList<NotificationChannel> channelList = new ArrayList<>();
         channelList.add(new NotificationChannel(CHANNEL_ID_IMPORTANT, "IMPORTANT", NotificationManager.IMPORTANCE_HIGH));
 
 
-        /* Register all channels from the list. */
+
         if (notificationManager != null)
             notificationManager.createNotificationChannels(channelList);
     }

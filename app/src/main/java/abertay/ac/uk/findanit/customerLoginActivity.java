@@ -68,9 +68,10 @@ public class customerLoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             Toast.makeText(customerLoginActivity.this, "Logged in Successfully", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(getApplicationContext(), customerPageActivity.class));
+                            progressBar.setVisibility(View.GONE);
                         } else {
                             Toast.makeText(customerLoginActivity.this, "Error ! " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
-                            progressBar.setVisibility(View.GONE);
+
                         }
                     }
                 });
@@ -86,11 +87,7 @@ public class customerLoginActivity extends AppCompatActivity {
             }
         });
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-            getWindow().getDecorView().setSystemUiVisibility(uiOptions);
-        } else {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        getWindow().getDecorView().setSystemUiVisibility(uiOptions);
     }
 }

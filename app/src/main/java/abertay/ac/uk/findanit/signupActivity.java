@@ -18,9 +18,6 @@ public class signupActivity extends AppCompatActivity {
 
     EditText firstName,surName,emailtxt,phonenum,psw,confirmpsw;
     boolean passcomp;
-    private  Button backbtn,nextbtn;
-
-
 
 
     @Override
@@ -28,8 +25,8 @@ public class signupActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
-        backbtn = findViewById(R.id.backbtn);
-        nextbtn = findViewById(R.id.nextbtn);
+        Button backbtn = findViewById(R.id.backbtn);
+        Button nextbtn = findViewById(R.id.nextbtn);
 
         backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -70,7 +67,7 @@ public class signupActivity extends AppCompatActivity {
 
                 }
                 else {
-
+                    // grouping the data so that it can be passed into the next activity
                     String firstname = firstName.getText().toString();
                     intent.putExtra("firstname", firstname);
 
@@ -128,12 +125,8 @@ public class signupActivity extends AppCompatActivity {
 
             }
         });
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
-            getWindow().getDecorView().setSystemUiVisibility(uiOptions);
-        } else {
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        }
+        int uiOptions = View.SYSTEM_UI_FLAG_FULLSCREEN;
+        getWindow().getDecorView().setSystemUiVisibility(uiOptions);
     }
 
 }
